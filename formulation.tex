@@ -1,0 +1,109 @@
+\section{FORMULATION}
+\subsection{Line of Sight guidance}
+%definer koordinatsystemer
+
+In addition to the North East Down coordinate system that will generally be used, a $los$ coordinate system is defined. This coordinate system is defined as having the x axis along the line between the previous and the next waypoint, denoted as $WP1$ and $WP2$. The y and z axis can be arbitrarily chosen as long as the $los$ coordinate system is a right hand coordinate system. The position of $Wp_1$ and $Wp_2$, and the state of the drone, $x$, are given in the $NED$ frame. The state of the drone consists only of the position and the velocity, $\textbf{x} = \begin{bmatrix} x & y & z & v_x & v_y & v_z\end{bmatrix}^\top$. Note that the line of sight guidance system makes decision based on the current best estimate of the state, $\mathbf{{\hat{x}}}$.
+
+\begin{align}
+    x_{los} = \frac{WP_2 - WP_1}{||WP_2 - WP_1||} \\
+    y_{los} = \frac{x_{los} \times \begin{bmatrix} 0&0&1\end{bmatrix}^\top}{|| x_{los} \times \begin{bmatrix} 0&0&1\end{bmatrix}^\top ||}\label{y_los}\\ 
+    z_{los} = x_{los} \times y_{los}
+\end{align}
+
+For the special case where $x_{los} = \begin{bmatrix} 0&0&1\end{bmatrix}^\top$, where the cross product in \ref{y_los} is undefined, the alternative formulation is used.
+
+\begin{align}
+    x_{los} = \frac{WP_2 - WP_1}{||WP_2 - WP_1||} \\
+    z_{los} = \frac{x_{los} \times \begin{bmatrix} 0&1&0\end{bmatrix}^\top}{|| x_{los} \times \begin{bmatrix} 0&1&0\end{bmatrix}^\top ||}\label{y_los}\\ 
+    y_{los} = x_{los} \times z_{los}
+\end{align}
+
+This basis can be used to find the rotational matrix between $NED$ and $los$.
+\begin{align}
+    R^{NED}_{los} = \begin{bmatrix} x_{los} & y_{los} & z_{los}\end{bmatrix}
+\end{align}
+
+The difference between $x$ and $WP_1$ given in $los$ frame gives the drones offset from the path between the two waypoints. The $x$ coordinate is the distance along the line, while the $y$ and $z$ coordinates gives the offset in $y_{los}$ and $z_{los}$ direction. The along path distance is irrelevant for LOS so this value will be masked out using a diagonal matrix with + in the top right corner as seen in equation \ref{chi^NED_los}. LOS guidance makes the drone at all times follow the vector pointing from its current position to a point $\Delta$ ahead on the specified path. In the $los$ frame this vector is simply $\Delta$ in $x_{los}$ direction and minus the drones distance to $WP_1$ in the $y_{los}$ and $z_{los}$ direction. 
+\begin{align}
+   \chi^{NED}_{los} & = R^{NED}_{los} \left(  \begin{bmatrix}\Delta \\ 0 \\ 0\end{bmatrix} - \begin{bmatrix} 0 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{bmatrix} R^{los}_{NED} (\begin{bmatrix} \mathbf{I} & \mathbf{0} \end{bmatrix} \hat{\textbf{x}} - WP_1) \right) \label{chi^NED_los} \\
+   V_{ref} & = v_0 \frac{\chi^{NED}_{los} }{|| \chi^{NED}_{los} ||}
+\end{align}
+
+The collision avoidance controller wants to add an offset angle the the LOS-vector. In the 2d case an angle $\alpha$ is proposed that is added to the LOS angle \textbf{REFFERER TAJ}. When seen as a vector, this is the same as rotating the vector around a z axis that is pointing out of the paper. For the 3D case two parameters are needed, $\alpha$ and $\theta$. $\alpha$ is used the same as before, that is used for turning the vector around some axis orthogonal to the $x_{los}$ axis. The angle $\theta$ tells us which axis to rotate around. Specifically the $x_{los}$-axis is turned $\theta$ degrees to point the $y_{los}$-axis the the rotational axis. The rotation $\alpha$ is then done over the rotated $y_{los}$-axis. \textbf{todo} forklar hvorfor vi roterer tilbake. This is seen in equation \ref{R_ca}.
+
+\begin{align}
+    \chi^{NED}_{los,ca} & = R^{NED}_{los}  R_{ca} \left(  \begin{bmatrix}\Delta \\ 0 \\ 0\end{bmatrix} - \begin{bmatrix} 0 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{bmatrix} R^{los}_{NED} (\begin{bmatrix} \mathbf{I} & \mathbf{0} \end{bmatrix} \hat{\textbf{x}} - WP_1) \right) \label{chi^los_los,ca}\\
+    R_{ca} & = R_{x=\theta} R_{y=\alpha} R_{x=-\theta} \label{R_ca} \\ 
+    V_{ref,ca} & = v_0 \frac{\chi^{NED}_{los,ca} }{|| \chi^{NED}_{los,ca} ||} \label{V_ref,ca}
+\end{align}
+
+
+\subsubsection{Special 2D case}
+
+Since the cross product and rotational matrices around axis are not defined for 2D, the 2D case requires some special notation
+\begin{align}
+    x_{los} = \frac{WP_2 - WP_1}{||WP_2 - WP_1||} \\
+    y_{los} = \begin{bmatrix}0 & 1\\ -1 & 0 \end{bmatrix} x_{los}
+\end{align}
+\begin{align}
+    R^{NED}_{los} = \begin{bmatrix} x_{los} & y_{los} \end{bmatrix}
+\end{align}
+\begin{align}
+    \chi^{NED}_{los,ca} & = R^{NED}_{los}  R_{ca} \left(  \begin{bmatrix}\Delta \\ 0 \end{bmatrix} - \begin{bmatrix} 0 & 0  \\ 0 & 1  \end{bmatrix} R^{los}_{NED} (\begin{bmatrix} \mathbf{I} & \mathbf{0} \end{bmatrix} \hat{\textbf{x}} - WP_1) \right) \label{chi^los_los,ca}\\
+    R_{ca} & = \begin{bmatrix}cos(\alpha & -\sin{\alpha}\\ sun(\alpha) & cos(\alpha) \end{bmatrix}
+\end{align}
+
+\subsection{State space equations}
+
+The drone is assumed to be a simple integrator, driven by a velocity $u$, and affected by a disturbance $w$. The disturbance $w$ is assumed to be gausian white noise. 
+
+\begin{align}
+    \dot{x}  = A x + B u + E w\\
+    A  = \begin{bmatrix} \mathbf{0} & \mathbf{I} \\ \mathbf{0} & \mathbf{0} \end{bmatrix}, \quad 
+    B  = \begin{bmatrix} \mathbf{0}  \\ \mathbf{I} \end{bmatrix} , \quad 
+    E  = \begin{bmatrix} \mathbf{0}  \\ \mathbf{I} \end{bmatrix} 
+\end{align}
+
+As this model is linear, an exact discretization can be found
+\begin{align}
+    x[k+1]  = A x[k] + B u[k] + E w[k]
+\end{align}
+
+The drone is equipped with a velocity controller
+\begin{align}
+    u[k] = - k ( \begin{bmatrix} \mathbf{0} & \mathbf{I} \end{bmatrix} \hat{x[k]} - V_{ref}[k] \\
+    \hat{x}[k] = x[k] + v[k]
+\end{align}
+
+This controller uses the estimated state $\hat{x}$ which is modeled as the state, $x$ plus some measurement noise $v$. $v$ is assumed to Gaussian white noise with zero mean and $P$ variance. 
+
+\begin{align}
+    x[k+1] & = A x[k] - B k \begin{bmatrix} \mathbf{0} & \mathbf{I} \end{bmatrix} (\hat{x}[k] - V_{ref}[k]) + E w[k] \\
+    x[k+1] & = A_{cl} x[k] + B_{cl} V_{ref}[k] + E w[k] \\
+    A_{cl}  = &A - B k \begin{bmatrix} \mathbf{0} & \mathbf{I} \end{bmatrix}, \quad B_{cl} = B k \begin{bmatrix} \mathbf{0} & \mathbf{I} \end{bmatrix}
+\end{align}
+
+The reference speed, $V_{ref}$ is calculated by the LOS guidance law, for example in equation \ref{V_ref,ca}.
+
+\subsection{Variance propagation}
+
+To be able to propagate the variance through the system a linear system is required. The state space is linear, but the LOS guidance law is nonlinear due to the normalization of the $\chi^{NED}_{los,ca}$ vector in equation \ref{V_ref,ca}. Nonlinearities will make a Gaussian curve loose its form ruining the concept of variance. To be able to use variance to get an estimate of the uncertainty in future positions the nonlinearities in the system are linearized.
+
+First the guidance law is re-written.
+
+\begin{align}
+    \chi^{NED}_{los,ca} & = R^{NED}_{los}  R_{ca} \left(  \begin{bmatrix}\Delta \\ 0 \\ 0\end{bmatrix} - \begin{bmatrix} 0 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{bmatrix} R^{los}_{NED} (\begin{bmatrix} \mathbf{I} & \mathbf{0} \end{bmatrix} \hat{x} - WP_1) \right) \\
+    E & = ^{NED}_{los}  R_{ca} \left(  \begin{bmatrix}\Delta \\ 0 \\ 0\end{bmatrix} + \begin{bmatrix} 0 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{bmatrix} R^{los}_{NED} WP_1 \right) \\
+    F & = ^{NED}_{los}  R_{ca}  \begin{bmatrix} 0 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{bmatrix} R^{los}_{NED}  \begin{bmatrix} \mathbf{I} & \mathbf{0} \end{bmatrix} \\
+    \chi^{NED}_{los,ca} & = E - F \hat{x} \\
+    \chi^{NED}_{los,ca} & = E - F x - F v 
+\end{align}
+
+Both x and v are stocastic variabels. x contains the uncertainty of where the next state is going to be, v contains the uncertainty in the future estimate or measurement of that state which is used to make decisions. The expected value of $x$ is baseed on the state space equations. V is measurements error, which is assumed to bea  zero mean white noise process.
+
+\begin{align}
+        V_{ref,ca} & = v_0 \frac{\chi^{NED}_{los,ca} }{|| \chi^{NED}_{los,ca} ||} \\
+        V_{ref,ca} & = v_0 \frac{E - F x - F v }{|| E - F x - F v ||}
+\end{align}
+
+This equation is lionized around the expected state $x_0$, that is lionization around $x=x_0$, $v=0$;
