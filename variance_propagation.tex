@@ -1,0 +1,60 @@
+\section{Variance propagation}
+
+\subsection{Varaince formulation}
+
+To be able to propagate the variance through the system a linear system is required. The state space is linear, but the LOS guidance law is nonlinear due to the normalization of the $\chi^{NED}_{los,ca}$ vector in equation \ref{V_ref,ca}. Nonlinearities will make a Gaussian curve loose its form ruining the concept of variance. To be able to use variance to get an estimate of the uncertainty in future positions the nonlinearities in the system are linearized.
+
+First the guidance law is re-written.
+
+\begin{align}
+    \chi^{NED}_{los,ca} & = R^{NED}_{los}  R_{ca} \left(  \begin{bmatrix}\Delta \\ 0 \\ 0\end{bmatrix} - \begin{bmatrix} 0 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{bmatrix} R^{los}_{NED} (\begin{bmatrix} \mathbf{I} & \mathbf{0} \end{bmatrix} \hat{x} - WP_1) \right) \\
+    \chi^{NED}_{los,ca} & = E - F \hat{x}_p \\
+    \chi^{NED}_{los,ca} & = E - F x_p - F v_p \\
+    E & = R^{NED}_{los}  R_{ca} \left(  \begin{bmatrix}\Delta \\ 0 \\ 0\end{bmatrix} + \begin{bmatrix} 0 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{bmatrix} R^{los}_{NED} WP_1 \right) \\
+    F & = R^{NED}_{los}  R_{ca}  \begin{bmatrix} 0 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{bmatrix} R^{los}_{NED}  \begin{bmatrix} \mathbf{I} & \mathbf{0} \end{bmatrix} \\
+    x_p & = \begin{bmatrix}\mathbf{I}  &\mathbf{0}\end{bmatrix} x, \quad 
+    \hat{x}_p  = \begin{bmatrix}\mathbf{I}& \mathbf{0}\end{bmatrix} \hat{x}, \quad
+    v_p  = \begin{bmatrix}\mathbf{I}& \mathbf{0}\end{bmatrix} v 
+\end{align}
+
+Both x and v are stocastic variabels. x contains the uncertainty of where the next state is going to be, v contains the uncertainty in the future estimate or measurement of that state which is used to make decisions. The expected value of $x$ is baseed on the state space equations. v is measurements error, which is assumed to be a zero mean white noise process with covariance matrix R.
+
+\begin{align}
+        V_{ref,ca} & = v_0 \frac{\chi^{NED}_{los,ca} }{|| \chi^{NED}_{los,ca} ||} \\
+        V_{ref,ca} & = v_0 \frac{E - F x_p - F v_p }{|| E - F x_p - F v_p ||}
+\end{align}
+
+This equation is linearized around the expected state $x_0$, that is linearization around $x=x_0$, $v=v_0=0$;
+\begin{multline}
+    \frac{\chi(x,v)}{|| \chi(x,v) ||}  = \frac{\chi(x_0,v_0)}{|| \chi(x_0,v_0) ||} + \frac{\partial}{\partial x} \frac{\chi(x_0,v_0)}{|| \chi(x_0,v_0) ||}  \begin{bmatrix}\mathbf{I}  &\mathbf{0}\end{bmatrix}(x-x_0) \\+ \frac{\partial}{\partial v} \frac{\chi(x_0,v_0)}{|| \chi(x_0,v_0) ||}  \begin{bmatrix}\mathbf{I}  &\mathbf{0}\end{bmatrix}(v-v_0) \\
+      = \hat{E} + \hat{F} \begin{bmatrix}\mathbf{I}  &\mathbf{0}\end{bmatrix}(x-x_0)  + \hat{\Phi} \begin{bmatrix}\mathbf{I}  &\mathbf{0}\end{bmatrix}v \\
+\end{multline}
+
+$\hat{Phi}$ and $\hat{F}$ are the same as both $v_p$ and $x_p$ are multiplied by F. Developing both the differensiations will show that they in fanct are equal.
+
+!Dette må utledes ordentligtt
+\begin{align}
+    \frac{\chi(x,v)}{|| \chi(x,v) ||} & = \hat{E} + \hat{F} \begin{bmatrix}\mathbf{I}  &\mathbf{0}\end{bmatrix}(x-x_0)  + \hat{F} \begin{bmatrix}\mathbf{I}  &\mathbf{0}\end{bmatrix}(v) \\
+    & = G - H x  - H v \\
+    G &= \hat{E} + \hat{F} \begin{bmatrix}\mathbf{I}  &\mathbf{0}\end{bmatrix}, \quad H = \hat{F} \begin{bmatrix}\mathbf{I}  &\mathbf{0}\end{bmatrix}
+\end{align}
+
+
+\begin{align}
+    F = \frac{\partial}{\partial x_p} \frac{E-Fx_p-Fv_p}{\sqrt{(E-Fx_p-Fv_p)^\top (E-Fx_p-Fv_p)}} \\
+    = \frac{F}{||E-Fx_p-Fv_p||} + \frac{(E-Fx_p-Fv_p)(E-Fx_p-Fv_p)^\top F}{||E-Fx_p-Fv_p||}
+\end{align}
+
+Inserting $x_p= \begin{bmatrix}\mathbf{I}  &\mathbf{0}\end{bmatrix}x0$ and $v_p=0$
+\begin{multline}
+    F= \frac{F}{||E-F  \begin{bmatrix}\mathbf{I}  &\mathbf{0}\end{bmatrix} x_0||} \\+ \frac{(E-F  \begin{bmatrix}\mathbf{I}  &\mathbf{0}\end{bmatrix}x_0)(E-F  \begin{bmatrix}\mathbf{I}  &\mathbf{0}\end{bmatrix}x_0)^\top F}{||E- F \begin{bmatrix}\mathbf{I}  &\mathbf{0}\end{bmatrix}x_0||} \\
+\end{multline}
+
+This result kan now be inserted into our state space equation
+\begin{align}
+ x[k+1] & = A_{cl} x[k] + B_{cl} V_{ref}[k] - B_{cl} v[k] + E w[k] \\
+ V_{ref} & = v_0(G- Hx - Hv)
+\end{align}
+ 
+
+\subsection{Results}

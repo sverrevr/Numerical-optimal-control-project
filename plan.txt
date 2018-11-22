@@ -1,0 +1,72 @@
+Motivasjon:
+    Enkle radar sensorer som har lav vekt
+    Usikkerhet i målingene 
+    
+    Noe filosofi runt at det er umulig å garantere ikke kollisjon, men vi må sette en øvre grense på akseptert risiko.
+    
+Overview
+    Forklar scenario mpc, endelig mulig avvik
+    si at vi trenger en formulering som akseptere avvik
+    
+Drone modell med LOS
+    Metode
+        Drone modell som en dobbel integrator, motiver
+        P hastighetskontroller, kommenter på at den basserer seg på usikkert estimat
+        LOS possisjonskontrolelr, bruker usikkert estimat
+        Hvordan få inn avvik fra CA kontrolleren
+        
+        Vis endringer for 2d case.
+        
+    Resultat
+        Vis at den oppfører seg rett i 3D, med varierende kontrollavvik
+        Tillsvarende i 2D        
+
+
+Varians propogasjon
+    Formulering
+    Linearisering
+    
+    Resultater:
+        Vis plott av sannsynlighetstetthetsfunksjonen over tid
+        
+
+Sensor modell og data behandling
+    Enkel radarmodell, bruk plot og forklar
+    Trumpfing for å slå sammen radar data med allerede eksisterende data. Brukes for å slå sammen data fra alle sensorene over tid
+        Diskuter hvorfor den er sånn, svart er "optimistisk" (for mye svart) hvit er pessimistisk.
+    Vis plot av dronen som har flyttet seg og har samlet litt data
+    Her trengs det en penetration deapth, dybde som blir markert.
+    
+MPC
+    Constraint
+        Forklar tidshorisonten
+        HVrodan drone prob og verden prob slåes sammen
+        HVordan usikkerhet over tid slås sammen
+    Objective
+        Hvordan along path offset beregnes
+        Datatap? Integral av feil avstand?
+    Default action når ikke feasable
+        Forklar at om vi er i ett utrygt punkt burde vi heller pelle oss vekk enn å bli
+        Ellers stopp
+        
+
+
+Parametervalg.
+    Penetration deapth
+    
+
+Resultater
+    Dronen som klarer at veggen er oppå planne path
+    Hindring i veien for planned path
+    Kjører rolig rundt hjørner /større sirkel for å få data før den går inn i faresonen
+    Takler problemfritt at det er en ukjent hindring rett rundt hjørnet
+    
+    Feiler:
+        Blir stuck i konvekse hull
+        Blir stuck i ting som er konvekse hull men ikke ser sånn ut siden wp snur seg.
+    
+    
+Konklusjon
+    Klarte å ha et minimum av tuningparametre som må velges fra oven.
+    Klarer mye men har noen svakheter som en høyere ivås kontroller må fange opp og replanne når skjer
+    
