@@ -1,18 +1,30 @@
 \section{INTRODUCTION}
 \subsection{Motivation}
-
+\textbf{gaa over}
 To enable the use of drones in industrial inspection, a level of automation must be achieved that ensures an acceptable low probability of collision, as this might harm the complex that is inspected and will hinder continuation of the inspection. A reasonable plan for a path that the drone can follow could be made offline based on 3D models or blueprints of the plant. Directly following this path does not fulfill the requirements of safety as the model might be inaccurate, or the world might have changed since the model was made. Collision avoidance strategies based on on-board percepting sensors must be utilized to achieve an acceptable safety level for the mission.
 
-For small rotary wing drones minimizing the weight of the payload is of great concern. With higher weight comes higher energy consumption which will reduce the operational time of a drone before it has to land and recharge. Advanced precepting sensors such as LIDAR, 2D and 3D cameras are relatively heavy for these drones. Enabling drones using simpler low weight sensors to approach a level of automation that is normally obtained with more advanced high weight sensors, could significantly increase the operational time of the drone. Simple stationary radar sensor fulfills the requirement of reduced weight. It also introduces the advantage of being a too strict sensor that rather gives a pessimistic estimate than a too optimistic one that image recognition often can lead to. A radar will also have larger field of view than a 2D LIDAR, reducing the chance that the drone will hit an unobserved obstacle. Using Radar sensors will therefor give an advantage in weight reduction and insurance that the probability of not observing an obstacle is low. Radar sensors have the disadvantage of giving results with very low resolution making it hard to distinguish safe areas close to obstacles from the obstacles themselves. 
+For small rotary wing drones minimizing the weight of the payload is of great concern. With higher weight comes higher energy consumption which will reduce the operational time of a drone before it has to land and recharge. Advanced precepting sensors such as LIDAR, 2D and 3D cameras are relatively heavy for these drones. \textbf{[citation needed]} Enabling drones using simpler low weight sensors to approach a level of automation that is normally obtained with more advanced high weight sensors, could significantly increase the operational time of the drone. Simple stationary radar sensor are significantly lighter and have the advantage of being a too strict sensor that rather gives a pessimistic estimate than a too optimistic one. A radar will also have larger field of view than a 2D LIDAR, reducing the chance that the drone will hit an unobserved obstacle. Using Radar sensors will therefor give an advantage in weight reduction and insurance that the probability of not observing an obstacle is low. Radar sensors have the disadvantage of giving results with very low resolution making it hard to distinguish safe areas close to obstacles from the obstacles themselves. 
 
-Er en usikkerhet i estimatet tilstand vi bruekr i kontrollere som vil gi en usikkerhet i possisjon når vi simulerer frem i tid. 
-Spesielt innendørs er dette problematisk?
+Estimation will always contain some uncertainty due to modelling errors, external disturbances, and sensor uncertainties. This will lead to an uncertainty in the current position, but also a greater uncertainty in future positions. The drone will control based on the state estimates, as this contain uncertainties, the control actions might not be perfect.
 
-    Enkle radar sensorer som har lav vekt
-    Usikkerhet i målingene 
-    
-    Noe filosofi runt at det er umulig å garantere ikke kollisjon, men vi må sette en øvre grense på akseptert risiko.
 
-%\subsection{Literature review}
+All controllers utilize a state estimate that contain some level of uncertainty. This gives uncertainty in where the drone is, and also uncertainty of where the drone will be in the future. As we are unable to exactly know the estimate the controller will use to calculate the control input, there will be uncertainties in the control input. This leads to uncertainties in the future position of the drone. Er dette spesielt viktig innendørs?
+
+
+Minimizing risk, or more strictly requireirng a risk level of 0  is not a reasonable objective. All actions have risk associated to them, making it impossible to ensure a 0 risk level. Minimizing risk is also not feasible as least risky action to take is to abort the mission and never ascend in the first place. Instead a  maximal acceptable risk level should be formulated, and the drone should rather try to optimize the true objective, which is to finish the mission as fast as possible ensuring acceptable data quality. Exactly what the goal of the mission is will vary between missions and the objective of the drone should be tailored for different types of missions (or parts innside the mission). Some missions could require that the drone keeps really close to the designed path for as big parts of the mission as possible, but might leave the path to avoid collision. This might be the case when data is only collected at an acceptable quality when the drone is close to the path, and it is acceptable to not collect data for short intervals in the mission. If this is the case, then the time close to the designated path should be maximized, while trying to finish the mission in a reasonable time. Other missions could accept larger deviations from the original path, but require that data is collected for the whole mission. In this case the largest acceptable distance should be introduced as an constraint, and the objective should be to finish the mission as fast as possible.
 
 \subsection{Contributions}
+ \textbf{todo}
+This paper formulates a 3D line of sight algorithm that can accept offsets to the planned movement direction. This shows that the concepts developed in \cite{Johansen2016} can easily be extended to work in 3D cases. 
+A simple strategy to combine radar data over time is proposed, and this strategy is utilized to make a simple probability map of where obstacles might be. 
+The dynamic equations for a simple double integrator affected by an input and noise, driven by a velocity regulator that gets the refence from 
+
+
+Vist hvordan metoden fra TAJ kan brukes i 3D
+Analysert oppførselen for droner som har signifikant lavere delta enn skip har
+Laget en enkel strategi for å slå sammen radar sensordata 
+Utledet hvordan variansen i systemet utvikler seg når vi estimerer frem i tid med prosessstøy og målestøy som virker gjnnom kontrollene
+Utviklet enn risikomodell som forteller sjangen for å kollidere over et tidsvindu
+Utviklet en robust kollisjonsunngåelsesstrategi som garanterer  at sjangsen for å kollidere er akseptabel lav, og som krever minimalt med tuning parametre,
+
+

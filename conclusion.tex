@@ -1,1 +1,18 @@
 \section{Conclusion}
+
+This work has developed a control strategy for collision avoidance in an unknown environment that guarantees an acceptable risk level. The method includes uncertainty's in predicted position from imperfect control inputs based on noisy measurements, as well as direct disturbance affecting the drone. Simple 2D simulations suggests that this control strategy manages to successfully avoid collision within the given risk level, with simple radar sensors as the perception sensors. The control strategy leads to safe behaviour such as not flying blindly around a corner, and instead flying in a larger circle to gather more data. But as the strategy is a greedy, it is unable to avoid getting stuck in convex hulls. Even though it is not able to avoid getting stuck, it will avoid collision, and instead stop or fly slowly back and forth. A higher level controller that designes the waypoints, can then detect that the drone is stuck and re-plan the waypoints around the convex area.
+
+The developed strategy is quite computationally simple with a short time horizon and few possible control actions that must be simulated. Almost all control actions can be simulated separately before comparison, which opens up for parallel computing. Whether this simplicity leads to fast computations is not yet determined, and depends a lot on how quick the probability density function of the drone can be computed. 
+
+The developed strategy requires no tuning of parameters that significantly affect the performance. A strategy for choosing all parameters that require asigning is presented for all but the process noise Q. 
+
+
+\section{Future work}
+
+Before this algorithm can be tested in practice the drone model has to be developed into a 3D model with attitude dynamics. Including attitude might significantly affect how the positional variance develops over time. Furthermore a new robust strategy for combining sensor data has to be developed, this strategy should encompass how reliably the information is. The physical size of the drone has to be included. This can be done by diluting the obstacle map with an ellipsoid with the same general dimensions as the drone. Lastly a strategy for calculating probability of collision over a time horizon has to be developed. The probability that the drone will collide over the time-horizon is the constraint we really care about. 
+
+
+%Estimating the size of the process disturbance is  
+
+%Velge tryggere veier
+

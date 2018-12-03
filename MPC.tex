@@ -1,14 +1,78 @@
 \section{Scenario based MPC formulation}
-\subsection{Constraint}
-Forklar tidshorisonten
-        HVrodan drone prob og verden prob slåes sammen
-        HVordan usikkerhet over tid slås sammen
+
+The scenario based MPC strategy will test out different control actions and chose the best action based on some objective. The list of control actions is defined as follows.
+
+\begin{align}
+    & \begin{multlined} \alpha  =  [ \begin{array}{c c c c c c c}
+    -120 &-90 &-70& -50& -20& 0 & \cdots \end{array}  \\ 
+    \begin{array}{c c c c c} 20& 50& 70& 90& 120 \end{array}] \end{multlined} \\
+     & v_0  = \begin{bmatrix}v_0^* & 0.5 v_0^* & 0.5 v_0^*\end{bmatrix}
+\end{align}
+
+The drone model will be used to simulated the resulting behaviour when applying the different combination of the angle and velocity control actions. The simulation is run over a time-horizon $T_h$. The estimated state as well as the variance in the estimate at each time-step is used to check the constraint and calculate the cost. The control action that optimizes the objective is chosen among the feasible actions that fulfill the constraints. If no action is feasible then a default action will be taken which is described later in this chapter. 
+
+\subsection{Constraint - Probability of collision}
+To ensure that the chosen route is safe, the probability of colliding at each time-step has to be sufficiently low. This probability is calculated for each cell by multiplying the probability that the drone is within the cell by the probability that there is an obstacle in the cell. This results in the probability that both the drone and an obstacle are present in that cell. The probability for collision is summed up over all cells, giving the probability that the drone will collide with any obstacle cell. The probability for collision has to be lower than a supplied maximum probability for collision, $r_{max}$, for every time-step. If this is the case, then that control action is deemed feasible.
+
+The constraint is checked for all time-steps over a time-horizon $T_h$. This horizon should be the time until the next MPC iteration plus the time the drone needs to stop. This is the time the drone needs to identify an obstacles, re-plan, and execute an evasive maneuver. The time the drone needs to stop should be chosen as the time to reach 0.3\% of the nominal speed $v_0^*$ from the nominal speed plus 4 times the maximum standard deviation in velocity within the time-horizon. The nominal speed plus 4 sigma ensures that 99.7\% of the cases will be within this velocity. 
+
+Stopping can be viewed as a one dimensional problem in velocity, the state space equation with velocity controller can therefor be reduced to the equation \eqref{1Dveleq} with $a_{cl}$ being a scalar. $a_{cl}$ is the term that describes the closed loop dynamic of the velocity in x-direction or y-direction. Both directions should be identical. 
+
+\begin{align} 
+    v[k+1] & = a_{cl} v[k]  \label{1Dveleq}\\
+    v[k+N] & = a_{cl}^N v[k]\\
+    0.03 v_0^* & \leq a_{cl}^N (v_0^* + 4 \sigma_v) \\
+    \frac{0.003 v_0}{(v_0 + 4 \sigma_v)} & \leq a_{cl}^N  \\
+    \textnormal{ln}(\frac{0.03 v_0}{(v_0 + 4 \sigma_v)}) & \leq N \textnormal{ln}(a_{cl}) \\
+    N  & \geq \frac{\textnormal{ln}(0.003 v_0) - \textnormal{ln}(v_0 + 4 \sigma_v)}{\textnormal{ln}(a_{cl})} \label{Num_timestep_to_stop}
+\end{align}
+
+The time horizon should be chosen as $T_h = N dt$ where N is the smallest integer that fulfills \eqref{Num_timestep_to_stop}.
+
 
 \subsection{Objective}
-        Hvordan along path offset beregnes
-        Datatap? Integral av feil avstand?
-        
+
+\subsubsection{Maximize traversed along path distance}
+If the goal is to finish the mission quickly, then the objective can be formulated as maximizing the traversed along path distance. Deviation from the path will lead to shorter along path distance, since the drone will traverse distance orthogonal to the path. A deviation will lead to further delays as the drone has to fly back to the path at some point. To figure out the delay introduced by an control action, the drone is first simulated as normal with this control action, and is then further simulated with the 0 control action until it reaches back to the path. The 0 action is the behaviour with $\alpha = 0$ and $v_0 = v_0^*$.This second simulation is done without variance propagation and checking the risk constraint. This will significantly speed up the second simulation. By simulating the behaviour from the control action plus the behaviour on returning to the path, the delay introduced by the control action is captured. The traversed along path distance is compared to the case where only the 0-action is applied. The resulting reduction in along path distance is minimized. Note that the 0-action has to be simulated for the same time interval as the path that uses the longest time to get back to the original path. The resulting path from a non zero control-action are compared to where the 0-action was at the time-point when the resulting path got sufficiently close to the original path. 
+
+The simulations should stop when the drone is sufficiently close to the path. The acceptable cross track error is denoted as $\delta$. This has to be done as the drone will asymptotically move towards the path, but never completely hit it. With $\delta$ small the resulting loss in along path distance is negligible. The larger $\delta$ is, the quicker the simulation is finished. A trade-of between computational time and precision has to be made.
+
+The along path distance should be calculated between the two current waypoints, not along the infinite line passing through the waypoints. If the drone passes the last waypoint before the waypoints switch, then the along path distance will not increase further before the drone makes any actual progress. 
+
+\begin{algorithm}
+ Let $S_0(t)$ denote the along path distance for the 0 control action at time-point t.\\
+ Let $T_{0,max}$ denote the latest time-point that is simulated for the 0 action.\\
+ Let $S_ca(t)$ denote the along path distance for control action (ca) at time-point t.\\
+ Let $T_{ca,max}$ denote the latest time-point that is simulated for the control action ca.\\
+ \null
+ Simulate $S_0(t)$ for $t=0$ to $t=T_h$\\
+ \null
+ \For{\textnormal{all control actions }$ca$}{
+    Simulate $S_{ca}(t)$ for $t=0$ to $t=T_h$\\
+    \While{\textnormal{cross track error at} $T_{ca,max} > \delta$}{
+        Simulate $S_{ca}(t)$ for $t=T_{ca,max}+1$ without variance propagation
+    }
+    
+    \If{$T_{0,max} < T_{ca,max}$}{
+        Simulate $S_0(t)$ for $t=T_{0,max}$ to $t=T_{ca,max}$ without variance propagation
+    }
+    $ds \gets S_0(T_{ca,max}) - S_{ca}(T_{ca,max})$
+ }
+ \caption{Calculation of along path distance. }
+\end{algorithm}
+
+\subsubsection{Beslutsomhet}
+
+Since the there are control actions that will take the drone backwards, some penalty has to be set to hinder the drone from going straight back where it came from after backtracking. A simple way of doing this that will be sufficient in a lot of cases is to force the drone to drive in the same general direction after it has backtracked. This is not formulated as a constraint, as the drone should ignore this rule if no other option is feasible. Instead it is introduced as a constraint with a very large penalty, $M$.
+
+\begin{equation}
+    M (abs(\alpha_{k-1}) > 90^\circ \enskip  \&\& \enskip sign(\alpha_{k-1}) \neq sign(\alpha_{k}))
+\end{equation}
+$\&\&$ is the logical \textit{and} operator. This line reads as: if the previous control action was larger than $90^\circ$, and this control action leads the drone towards the opposite side of the previous action, then a large penalty should be applied. M has to be chosen large enough to overshadow all other penalties. It should not be set to $\infty$ as this will lose all information regarding the other objectives. If only actions with this penalty are feasible, then the one with the lowest cost among the other objectives should be chosen.
+
 \subsection{Default action}
-når det er infeasable
-        Forklar at om vi er i ett utrygt punkt burde vi heller pelle oss vekk enn å bli
-        Ellers stopp
+
+When no action is feasible then the safest action among all the given actions and the stop action should be taken. Often when the drone gets stuck, stopping might be the safest choice. But if measurement errors lead to the current drone position being infeasible, then it might be safer to take a non zero action that will move the drone further away from the obstacle. If the stop action is chosen then the drone should start rotating to improve the obstacle map.
+
+
+

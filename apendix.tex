@@ -1,0 +1,52 @@
+\section{Apendix A - Linearization of normalization} 
+\label{Appendix_linearization}
+
+This section will derive the linearization of a vector normalization on the form in equation \ref{normalization_exp}. The expression is linearized around $\bm{x}=\bm{x}_0$, and $\bm{v}=\bm{0}$. 
+First the proiduct rule is applied.
+\begin{align}
+        N(\bm{x},\bm{v}) & = \frac{E - F \bm{x} - F \bm{v} }{|| E - F \bm{x} - F \bm{v} ||} \label{normalization_exp}\\
+        & = \bm{u}(\bm{x},\bm{v}) v(\bm{x},\bm{v})^{-1} = v(\bm{x},\bm{v})^{-1} \bm{u}(\bm{x},\bm{v}) \\
+\end{align}
+The linearization is defined as follows
+\begin{align}
+    \bar{N}(\bm{x},\bm{v}) & = N(\bm{x}_0,\bm{0}) + \frac{\partial}{\partial \bm{x}} N(\bm{x}=\bm{x}_0,\bm{v}=0) (\bm{x}-\bm{x}_0) +\frac{\partial}{\partial v} N(\bm{x}=\bm{x}_0,\bm{v}=0) \bm{v} \\
+    N(\bm{x}_0,\bm{0}) & = \frac{E - F \bm{x}_0}{|| E - F \bm{x}_0||}
+\end{align}
+The derivative of $N$ with respect to $\bm{x}$ is calculated step by step.
+\begin{align}
+    \frac{\partial}{\partial \bm{x}} N(\bm{x},\bm{v}) ={} & v(\bm{x},\bm{v})^{-1} \frac{\partial \bm{u}(\bm{x},\bm{v})}{\partial \bm{x}}  - \frac{1}{2} \bm{u}(\bm{x},\bm{v}) v(\bm{x})^{-3/2} \frac{\partial v(\bm{x},\bm{v})}{\partial \bm{x}}\\
+    \bm{u}(\bm{x},\bm{v}) ={} &  E - F \bm{x} - F \bm{v} \\
+    \frac{\partial \bm{u}(x,v)}{\partial \bm{x}} ={} & -F \\
+    v(\bm{x},\bm{v}) ={} & (E-F\bm{x} - F \bm{v})^\top (E-F\bm{x} - F \bm{v})\\
+    ={} & (E^\top-(\bm{x}^\top +\bm{v}^\top)  F^\top )(E-F(\bm{x} +\bm{v}))\\
+    ={} & E^\top E - E^\top F (\bm{x} +\bm{v}) - (\bm{x}^\top +\bm{v}^\top) F^\top E + \bm{x}^\top F^\top F \bm{x} 
+    +\bm{x}^\top F^\top F \bm{v}
+    +\bm{v}^\top F^\top F \bm{x}
+    +\bm{v}^\top F^\top F \bm{v} \\
+    \frac{\partial v(\bm{x}=\bm{x}_0,\bm{v}=\bm{0})}{\partial \bm{x}} = {}&  - 2 E^\top F + 2 \bm{x}_0^\top F^\top F = -2(E-F \bm{x}_0)^\top F\\
+    \frac{\partial}{\partial \bm{x}} N(\bm{x} = \bm{x}_0, \bm{v} = \bm{0}) ={} & \frac{-F}{||E - F \bm{x}_0||} + \frac{(E - F \bm{x})(E - F \bm{x})^\top F}{||E - F \bm{x}_0||^3}\\
+\end{align}
+The derivative of $N$ with respect to $\bm{v}$ is calculated.
+\begin{align}
+    \frac{\partial}{\partial \bm{v}} N(\bm{x},\bm{v}) ={} & v(\bm{x},\bm{v})^{-1} \frac{\partial \bm{u}(\bm{x},\bm{v})}{\partial \bm{v}}  - \frac{1}{2} \bm{u}(\bm{x},\bm{v}) v(\bm{x})^{-3/2} \frac{\partial v(\bm{x},\bm{v})}{\partial \bm{v}}\\
+    \bm{u}(\bm{x},\bm{v}) ={} &  E - F \bm{x} - F \bm{v} \\
+    \frac{\partial \bm{u}(x,v)}{\partial \bm{v}} ={} & -F \\
+    v(\bm{x},\bm{v}) ={}  & E^\top E - E^\top F (\bm{x} +\bm{v}) - (\bm{x}^\top +\bm{v}^\top) F^\top E + \bm{x}^\top F^\top F \bm{x} 
+    +\bm{x}^\top F^\top F \bm{v}
+    +\bm{v}^\top F^\top F \bm{x}
+    +\bm{v}^\top F^\top F \bm{v} \\
+    \frac{\partial v(\bm{x},\bm{v})}{\partial \bm{v}} = {}&  -2 E^\top F + 2 \bm{x}^\top F^\top F +2 \bm{v}^\top F^\top F \\
+    \frac{\partial v(\bm{x}=\bm{x}_0,\bm{v}=\bm{0})}{\partial \bm{v}} = {}&  -2 E^\top F + 2 \bm{x}_0^\top F^\top F
+\end{align}
+
+Note that $\frac{\partial}{\partial \bm{x}} N(\bm{x},\bm{v})= \frac{\partial}{\partial \bm{v}}N(\bm{x},\bm{v})$. 
+
+The linearized system can then be formulated on the following form.
+
+
+\begin{align}
+        \bar{N}(\bm{x},\bm{v})  ={}& (\bar{E} - \bar{F} x -\bar{F} v) \\
+        \bar{F} ={}& \frac{F}{||E - F  x_0||}
+        -\frac{(E - F  x_0)(E - F x_0)^\top F}{||E - F x_0||^3}\\
+        \bar{E} ={}&   \frac{E - F x_0}{||E - F x_0||} + \bar{F} x_0 \\
+\end{align}

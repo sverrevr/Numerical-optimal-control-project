@@ -18,12 +18,20 @@
 
 % The following packages can be found on http:\\www.ctan.org
 \usepackage{graphics} % for pdf, bitmapped graphics files
+\usepackage{subcaption}
 \usepackage{epsfig} % for postscript graphics files
 \usepackage{mathptmx} % assumes new font selection scheme installed
 \usepackage{times} % assumes new font selection scheme installed
 \usepackage{amsmath} % assumes amsmath package installed
 \usepackage{amssymb}  % assumes amsmath package installed
 \usepackage{mathtools}
+\usepackage{algorithm2e}
+\usepackage{bm}
+\usepackage{multicol}
+
+\usepackage{cleveref}
+\crefdefaultlabelformat{#2\bfseries\upshape(#1)#3}
+\creflabelformat{Eq.}{#2\bfseries\upshape(#1)#3}
 
 \title{\LARGE \bf
 Collision avoidance using scenario based MPC for low resolution sensors. 
@@ -55,8 +63,10 @@ Collision avoidance using scenario based MPC for low resolution sensors.
 
 
 \maketitle
-\thispagestyle{empty}
-\pagestyle{empty}
+\thispagestyle{plain}
+\pagestyle{plain}
+%\thispagestyle{empty}
+%\pagestyle{empty}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -67,19 +77,25 @@ Collision avoidance using scenario based MPC for low resolution sensors.
 \input{variance_propagation}
 \input{sensor_modell}
 \input{MPC}
-\input{parameters}
+%\input{parameters}
 \input{results}
 \input{conclusion}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\section*{ACKNOWLEDGMENT}
+\bibliographystyle{plain}
+\bibliography{ref}
+
+\onecolumn
+\begin{appendices}
+\pagenumbering{roman}
 \section*{APPENDIX}
+\input{apendix}
 
-\section*{ACKNOWLEDGMENT}
-
-
-
+\end{appendices}
 \end{document}

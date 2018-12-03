@@ -1,1 +1,15 @@
 \section{Parameter choices}
+\begin{itemize}
+    \item Waypoints: has to be chosen by a higher level controller or opperator
+    \item $r_{max}$: maximal accepted risk has to be chosen by a higher level controller or opperator
+    \item $k$ and $\Delta$: the low level controller parameters should be designed and tuned seperatly
+    \item $d_p$: Penetration deapth. Should be calculated by equation \eqref{penetration_deapth}.
+    \item $T_s$: emergency stop time. Should be calculated by equation \eqref{Num_timestep_to_stop}.
+    \item $T_{mpc}$: The time between every MPC iteration. Should be chosen as the worst case time it takes to calculate one iteration on the hardware. 
+    \item $dt$: Has to be tuned based on the hardware and drone dynamics. Must be chosen small enough to ensure that drone does not skip over small obstacles, preferably touches the obstacle in multiple time-steps. 
+    \item $d$: Waypoint switching distance. Should be chosen chosen in accordance with equation \eqref{Num_timestep_to_stop}
+    \item $\delta$: Acceptable across track error for along path calculations. Should be chosen as the smallest value that gives acceptable precision. 
+    \item $Q$: System disturbance covariance matrix. This parameter is hard to estimate as it encompasses modeling errors and external disturbances. This has to be chosen based on experience or a higher level controller.
+    \item $R$: Measurement disturbance covariance matrix. Can be extracted from the sensor data sheet or by manual testing. If a Kalman-filter is utilized then the covariance in the estimate should be used.
+    
+\end{itemize}
